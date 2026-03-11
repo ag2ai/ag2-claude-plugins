@@ -1,0 +1,5 @@
+{
+  "name": "ag2-agent-scaffold",
+  "version": "1.0.0",
+  "description": "Scaffold new AG2 agents with proper structure, tool functions, and A2A server wiring"
+}

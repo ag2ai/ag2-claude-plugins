@@ -1,0 +1,66 @@
+{
+  "name": "ag2-claude-plugins",
+  "version": "1.0.0",
+  "description": "Claude Code plugin marketplace for building AG2 agents and multi-agent workflows",
+  "owner": {
+    "name": "AG2 AI",
+    "url": "https://github.com/ag2ai"
+  },
+  "plugins": [
+    {
+      "name": "ag2-agent-scaffold",
+      "source": "./plugins/ag2-agent-scaffold",
+      "description": "Scaffold new AG2 agents with proper structure, tool functions, and A2A server wiring",
+      "version": "1.0.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-agent-scaffold",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "tags": ["ag2", "autogen", "agent", "scaffold", "a2a"]
+    },
+    {
+      "name": "ag2-workflow-patterns",
+      "source": "./plugins/ag2-workflow-patterns",
+      "description": "Multi-agent orchestration patterns: group chat, sequential, round-robin, and custom workflows",
+      "version": "1.0.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-workflow-patterns",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "tags": ["ag2", "multi-agent", "workflow", "orchestration", "group-chat"]
+    },
+    {
+      "name": "ag2-tool-builder",
+      "source": "./plugins/ag2-tool-builder",
+      "description": "Create well-structured tool functions for AG2 agents with proper error handling and JSON contracts",
+      "version": "1.0.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-tool-builder",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "tags": ["ag2", "tools", "function-calling", "api-integration"]
+    },
+    {
+      "name": "ag2-agent-reviewer",
+      "source": "./plugins/ag2-agent-reviewer",
+      "description": "Review AG2 agent code for common issues: prompt quality, tool contracts, error handling, and security",
+      "version": "1.0.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-agent-reviewer",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "tags": ["ag2", "review", "quality", "security"]
+    },
+    {
+      "name": "ag2-agent-guide",
+      "source": "./plugins/ag2-agent-guide",
+      "description": "Agent-based advisors for AG2 architecture decisions, pattern selection, and system prompt engineering",
+      "version": "1.0.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-agent-guide",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "tags": ["ag2", "architecture", "patterns", "best-practices", "prompts"]
+    }
+  ]
+}

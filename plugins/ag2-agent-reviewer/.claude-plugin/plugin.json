@@ -1,0 +1,5 @@
+{
+  "name": "ag2-agent-reviewer",
+  "version": "1.0.0",
+  "description": "Review AG2 agent code for common issues: prompt quality, tool contracts, error handling, and security"
+}

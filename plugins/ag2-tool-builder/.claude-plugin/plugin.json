@@ -1,0 +1,5 @@
+{
+  "name": "ag2-tool-builder",
+  "version": "1.0.0",
+  "description": "Create well-structured tool functions for AG2 agents with proper error handling and JSON contracts"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "ag2-agent-guide",
+  "version": "1.0.0",
+  "description": "Agent-based guide for AG2 architecture decisions: when to use which patterns, agent design principles, and multi-agent best practices"
+}
