@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AG2 Claude Code Plugins - Build AG2 agents and multi-agent workflows directly from Claude Code">
+  <title>AG2 Claude Code Plugins</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       Tokens
+    ============================================================ */
+    :root {
+      --bg:            #030303;
+      --bg-card:       rgba(255,255,255,0.03);
+      --bg-card-hover: rgba(255,255,255,0.055);
+      --bg-code:       rgba(255,255,255,0.04);
+
+      --border:        rgba(255,255,255,0.08);
+      --border-hover:  rgba(139,92,246,0.55);
+      --border-card:   rgba(255,255,255,0.07);
+
+      --text-primary:  #f1f1f1;
+      --text-secondary:#a0a0a8;
+      --text-muted:    #6b6b75;
+
+      /* indigo → violet gradient */
+      --grad-start:    #6366f1;
+      --grad-end:      #a855f7;
+      --grad:          linear-gradient(135deg, var(--grad-start), var(--grad-end));
+
+      /* accent glow */
+      --glow-indigo:   rgba(99,102,241,0.18);
+      --glow-violet:   rgba(168,85,247,0.18);
+
+      --success:       #34d399;
+      --sky:           #38bdf8;
+
+      --font-sans:     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --font-mono:     "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+      --radius-sm:     6px;
+      --radius:        10px;
+      --radius-lg:     14px;
+      --radius-xl:     20px;
+    }
+
+    /* ============================================================
+       Reset & base
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: var(--grad-start);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover { color: var(--grad-end); }
+
+    /* ============================================================
+       Background ambient glow blobs
+    ============================================================ */
+    .bg-blobs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-blobs::before {
+      content: "";
+      position: absolute;
+      top: -20%;
+      left: -10%;
+      width: 65vw;
+      height: 65vw;
+      background: radial-gradient(circle at center, rgba(99,102,241,0.13) 0%, transparent 65%);
+      animation: blobDrift1 18s ease-in-out infinite alternate;
+    }
+
+    .bg-blobs::after {
+      content: "";
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 55vw;
+      height: 55vw;
+      background: radial-gradient(circle at center, rgba(168,85,247,0.11) 0%, transparent 65%);
+      animation: blobDrift2 22s ease-in-out infinite alternate;
+    }
+
+    @keyframes blobDrift1 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(6vw, 4vh) scale(1.08); }
+    }
+    @keyframes blobDrift2 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-5vw, -3vh) scale(1.06); }
+    }
+
+    /* A third mid-page blob */
+    .bg-blob-mid {
+      position: fixed;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle at center, rgba(99,102,241,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       Page stacking context
+    ============================================================ */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       Layout
+    ============================================================ */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    section {
+      padding: 96px 0;
+    }
+
+    /* ============================================================
+       Nav
+    ============================================================ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      padding: 0;
+      background: rgba(3,3,3,0.7);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 60px;
+    }
+
+    .topbar-brand {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-brand .brand-sep {
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .topbar-brand .brand-sub {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .topbar-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .topbar-links a.nav-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .topbar-links a.nav-link:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-primary) !important;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-github:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: var(--text-primary) !important;
+    }
+
+    /* ============================================================
+       Hero
+    ============================================================ */
+    .hero {
+      padding: 120px 0 100px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Thin horizontal glow line under hero */
+    .hero::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), rgba(168,85,247,0.35), transparent);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px;
+      padding: 5px 14px;
+      margin-bottom: 36px;
+    }
+
+    .hero-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      flex-shrink: 0;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 .h1-top {
+      display: block;
+      color: var(--text-primary);
+    }
+
+    .hero h1 .h1-grad {
+      display: block;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0 auto 56px;
+      line-height: 1.65;
+      font-weight: 400;
+    }
+
+    /* Install block */
+    .install-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 48px;
+    }
+
+    .install-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .install-cmd {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.1),
+        0 0 30px rgba(99,102,241,0.06),
+        0 8px 32px rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px);
+      transition: border-color 0.25s, box-shadow 0.25s;
+      max-width: 100%;
+    }
+
+    .install-cmd:hover {
+      border-color: rgba(99,102,241,0.35);
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.2),
+        0 0 40px rgba(99,102,241,0.1),
+        0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .install-cmd code {
+      font-family: var(--font-mono);
+      font-size: 0.9375rem;
+      color: #c4b5fd;
+      padding: 16px 24px;
+      white-space: nowrap;
+      overflow-x: auto;
+      flex: 1;
+    }
+
+    .install-cmd code .cmd-prefix {
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      transition: color 0.2s, background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .copy-btn.copied {
+      color: var(--success);
+    }
+
+    .copy-btn svg {
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+
+    .copy-btn:active svg {
+      transform: scale(0.9);
+    }
+
+    /* Hero CTA buttons */
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--grad);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      padding: 13px 26px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 24px rgba(99,102,241,0.3), 0 4px 16px rgba(0,0,0,0.3);
+      letter-spacing: -0.01em;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px rgba(99,102,241,0.45), 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9375rem;
+      padding: 13px 26px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-card);
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.09);
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
+    }
+
+    /* ============================================================
+       Section headings
+    ============================================================ */
+    .section-header {
+      margin-bottom: 52px;
+    }
+
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: transparent;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 540px;
+    }
+
+    /* ============================================================
+       Plugin cards
+    ============================================================ */
+    .plugins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .plugin-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Gradient corner glow on hover */
+    .plugin-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0), transparent);
+      transition: background 0.3s;
+    }
+
+    .plugin-card:hover {
+      transform: translateY(-4px);
+      background: var(--bg-card-hover);
+      border-color: rgba(99,102,241,0.4);
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,0.12),
+        0 0 40px rgba(99,102,241,0.08),
+        0 16px 40px rgba(0,0,0,0.5);
+    }
+
+    .plugin-card:hover::before {
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.6), rgba(168,85,247,0.6), transparent);
+    }
+
+    .plugin-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .plugin-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.1));
+      border: 1px solid rgba(99,102,241,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .plugin-icon svg {
+      color: #a5b4fc;
+    }
+
+    .type-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 4px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .type-badge.skills {
+      color: var(--success);
+      background: rgba(52,211,153,0.1);
+      border: 1px solid rgba(52,211,153,0.25);
+    }
+
+    .type-badge.agents {
+      color: var(--sky);
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.25);
+    }
+
+    .type-badge.both {
+      color: #fbbf24;
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.25);
+    }
+
+    .plugin-name {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #a5b4fc;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .plugin-card h3 {
+      font-size: 1.075rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.015em;
+      line-height: 1.35;
+    }
+
+    .plugin-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .plugin-desc code {
+      font-family: var(--font-mono);
+      font-size: 0.83em;
+      color: #a5b4fc;
+      background: rgba(99,102,241,0.1);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+
+    .plugin-skills {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .skills-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .skill-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius-sm);
+      padding: 3px 9px;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .plugin-card:hover .skill-tag {
+      border-color: rgba(99,102,241,0.2);
+    }
+
+    .agent-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--sky);
+      background: rgba(56,189,248,0.07);
+      border: 1px solid rgba(56,189,248,0.18);
+      border-radius: var(--radius-sm);
+      padding: 3px 9px;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       Divider between sections
+    ============================================================ */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      border: none;
+      margin: 0;
+    }
+
+    /* ============================================================
+       Pattern table
+    ============================================================ */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background: rgba(255,255,255,0.025);
+    }
+
+    thead th {
+      text-align: left;
+      padding: 16px 24px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.035);
+    }
+
+    tbody td {
+      padding: 16px 24px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    tbody td:first-child {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .pattern-name {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: #a5b4fc;
+    }
+
+    .plugin-ref {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-sm);
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       Resources
+    ============================================================ */
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .resource-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: transform 0.25s, border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .resource-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0), transparent);
+      transition: background 0.3s;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-3px);
+      background: var(--bg-card-hover);
+      border-color: rgba(99,102,241,0.35);
+      box-shadow: 0 0 30px rgba(99,102,241,0.07), 0 12px 32px rgba(0,0,0,0.4);
+    }
+
+    .resource-card:hover::before {
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(168,85,247,0.5), transparent);
+    }
+
+    .resource-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08));
+      border: 1px solid rgba(99,102,241,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+
+    .resource-card:hover .resource-icon {
+      border-color: rgba(99,102,241,0.4);
+    }
+
+    .resource-icon svg {
+      color: #a5b4fc;
+    }
+
+    .resource-content h3 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+      letter-spacing: -0.01em;
+    }
+
+    .resource-content p {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       Footer
+    ============================================================ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .footer-left p {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .footer-left a {
+      color: var(--text-secondary);
+    }
+    .footer-left a:hover { color: var(--text-primary); }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .footer-divider {
+      color: rgba(255,255,255,0.1);
+      font-size: 0.75rem;
+      user-select: none;
+    }
+
+    /* ============================================================
+       Responsive
+    ============================================================ */
+    @media (max-width: 768px) {
+      section { padding: 72px 0; }
+      .hero { padding: 88px 0 72px; }
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 0 20px; }
+      .hero { padding: 72px 0 60px; }
+      .hero h1 { font-size: 2.25rem; }
+      .install-cmd code { font-size: 0.8125rem; padding: 14px 16px; }
+      .copy-btn { padding: 14px 16px; font-size: 0rem; }
+      .copy-btn svg { display: block; }
+      .plugins-grid { grid-template-columns: 1fr; }
+      section { padding: 60px 0; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      thead th:nth-child(2), tbody td:nth-child(2) { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar-links a.nav-link { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient glow blobs -->
+  <div class="bg-blobs" aria-hidden="true"></div>
+  <div class="bg-blob-mid" aria-hidden="true"></div>
+
+  <div class="page-wrapper">
+
+    <!-- ============================================================
+         Nav
+    ============================================================ -->
+    <nav class="topbar" aria-label="Site navigation">
+      <div class="container topbar-inner">
+        <span class="topbar-brand">
+          AG2
+          <span class="brand-sep">/</span>
+          <span class="brand-sub">Claude Code Plugins</span>
+        </span>
+        <div class="topbar-links">
+          <a class="nav-link" href="#plugins">Plugins</a>
+          <a class="nav-link" href="#patterns">Patterns</a>
+          <a class="nav-link" href="#resources">Resources</a>
+          <a class="btn-github" href="https://github.com/ag2ai/ag2-claude-plugins" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ============================================================
+         Hero
+    ============================================================ -->
+    <header class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Open Source &mdash; Apache 2.0
+        </div>
+
+        <h1>
+          <span class="h1-top">AG2 Claude Code</span>
+          <span class="h1-grad">Plugins</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Build AG2 agents and multi-agent workflows directly from Claude Code.
+          Scaffold, review, and orchestrate agents without leaving your editor.
+        </p>
+
+        <div class="install-wrap">
+          <span class="install-label">Install in Claude Code</span>
+          <div class="install-cmd" id="install-block">
+            <code>
+              <span class="cmd-prefix">/</span>plugin marketplace add ag2ai/ag2-claude-plugins
+            </code>
+            <button class="copy-btn" id="copy-btn" aria-label="Copy install command" title="Copy to clipboard">
+              <!-- Clipboard icon (default) -->
+              <svg id="icon-copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <!-- Checkmark icon (after copy) -->
+              <svg id="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span id="copy-label">Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn-primary" href="https://github.com/ag2ai/ag2-claude-plugins" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            Get Started
+          </a>
+          <a class="btn-secondary" href="https://docs.ag2.ai/" target="_blank" rel="noopener">
+            View Documentation
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         Plugins
+    ============================================================ -->
+    <section id="plugins">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-eyebrow">Plugin Marketplace</div>
+          <h2>Available Plugins</h2>
+          <p>Five focused plugins covering scaffolding, orchestration, tooling, review, and architectural guidance.</p>
+        </div>
+
+        <div class="plugins-grid">
+
+          <!-- ag2-agent-scaffold -->
+          <article class="plugin-card">
+            <div class="plugin-card-header">
+              <div class="plugin-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </div>
+              <span class="type-badge skills">Skills</span>
+            </div>
+            <div>
+              <div class="plugin-name">ag2-agent-scaffold</div>
+            </div>
+            <p class="plugin-desc">
+              Scaffold new AG2 agents with proper structure, tool functions, and A2A server wiring.
+              Generates a working <code>ConversableAgent</code> or a full A2A-compliant service in one step.
+            </p>
+            <div class="plugin-skills">
+              <span class="skills-label">Skills</span>
+              <div class="skills-list">
+                <span class="skill-tag">/new-agent</span>
+                <span class="skill-tag">/new-a2a-agent</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ag2-workflow-patterns -->
+          <article class="plugin-card">
+            <div class="plugin-card-header">
+              <div class="plugin-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="5" r="3"></circle>
+                  <circle cx="5" cy="19" r="3"></circle>
+                  <circle cx="19" cy="19" r="3"></circle>
+                  <line x1="12" y1="8" x2="5.5" y2="16.5"></line>
+                  <line x1="12" y1="8" x2="18.5" y2="16.5"></line>
+                </svg>
+              </div>
+              <span class="type-badge skills">Skills</span>
+            </div>
+            <div>
+              <div class="plugin-name">ag2-workflow-patterns</div>
+            </div>
+            <p class="plugin-desc">
+              Multi-agent orchestration patterns for common use cases. From simple two-agent chats
+              to group chats and nested hub-and-spoke workflows.
+            </p>
+            <div class="plugin-skills">
+              <span class="skills-label">Skills</span>
+              <div class="skills-list">
+                <span class="skill-tag">/ag2-chat-fundamentals</span>
+                <span class="skill-tag">/two-agent-chat</span>
+                <span class="skill-tag">/sequential-chat</span>
+                <span class="skill-tag">/group-chat</span>
+                <span class="skill-tag">/group-chat-auto-pattern</span>
+                <span class="skill-tag">/nested-chat</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ag2-tool-builder -->
+          <article class="plugin-card">
+            <div class="plugin-card-header">
+              <div class="plugin-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+              </div>
+              <span class="type-badge skills">Skills</span>
+            </div>
+            <div>
+              <div class="plugin-name">ag2-tool-builder</div>
+            </div>
+            <p class="plugin-desc">
+              Create well-structured tool functions with proper error handling, type annotations,
+              docstrings, and JSON contracts. Includes API connector scaffolding with auth and pagination.
+            </p>
+            <div class="plugin-skills">
+              <span class="skills-label">Skills</span>
+              <div class="skills-list">
+                <span class="skill-tag">/new-tool</span>
+                <span class="skill-tag">/connector-tool</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ag2-agent-reviewer -->
+          <article class="plugin-card">
+            <div class="plugin-card-header">
+              <div class="plugin-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+              </div>
+              <span class="type-badge agents">Agent</span>
+            </div>
+            <div>
+              <div class="plugin-name">ag2-agent-reviewer</div>
+            </div>
+            <p class="plugin-desc">
+              Review AG2 agent code for common issues including tool contract violations, prompt quality,
+              security concerns, and adherence to best practices.
+            </p>
+            <div class="plugin-skills">
+              <span class="skills-label">Agents</span>
+              <div class="skills-list">
+                <span class="agent-tag">ag2-reviewer</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ag2-agent-guide -->
+          <article class="plugin-card">
+            <div class="plugin-card-header">
+              <div class="plugin-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <span class="type-badge agents">Agents</span>
+            </div>
+            <div>
+              <div class="plugin-name">ag2-agent-guide</div>
+            </div>
+            <p class="plugin-desc">
+              Architecture advisors for AG2 agent systems. Get pattern recommendations and
+              system prompt guidance without leaving Claude Code.
+            </p>
+            <div class="plugin-skills">
+              <span class="skills-label">Agents</span>
+              <div class="skills-list">
+                <span class="agent-tag">ag2-architect</span>
+                <span class="agent-tag">ag2-prompt-engineer</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ============================================================
+         Pattern quick reference
+    ============================================================ -->
+    <section id="patterns">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-eyebrow">Reference</div>
+          <h2>Pattern Quick Reference</h2>
+          <p>Match your use case to the right orchestration pattern and plugin.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Need</th>
+                <th>Pattern</th>
+                <th>Plugin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Single agent with API access</td>
+                <td><span class="pattern-name">Tool-augmented agent</span></td>
+                <td><span class="plugin-ref">ag2-agent-scaffold</span></td>
+              </tr>
+              <tr>
+                <td>Draft + review cycle</td>
+                <td><span class="pattern-name">Two-agent chat</span></td>
+                <td><span class="plugin-ref">ag2-workflow-patterns</span></td>
+              </tr>
+              <tr>
+                <td>Step-by-step processing</td>
+                <td><span class="pattern-name">Sequential pipeline</span></td>
+                <td><span class="plugin-ref">ag2-workflow-patterns</span></td>
+              </tr>
+              <tr>
+                <td>Collaborative problem solving</td>
+                <td><span class="pattern-name">Group chat</span></td>
+                <td><span class="plugin-ref">ag2-workflow-patterns</span></td>
+              </tr>
+              <tr>
+                <td>Expert consultation</td>
+                <td><span class="pattern-name">Nested chats (hub-and-spoke)</span></td>
+                <td><span class="plugin-ref">ag2-workflow-patterns</span></td>
+              </tr>
+              <tr>
+                <td>Context-dependent routing</td>
+                <td><span class="pattern-name">Group chat with handoffs</span></td>
+                <td><span class="plugin-ref">ag2-workflow-patterns</span></td>
+              </tr>
+              <tr>
+                <td>Deployable A2A service</td>
+                <td><span class="pattern-name">A2A agent server</span></td>
+                <td><span class="plugin-ref">ag2-agent-scaffold</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ============================================================
+         Resources
+    ============================================================ -->
+    <section id="resources">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-eyebrow">Documentation</div>
+          <h2>Resources</h2>
+          <p>Documentation and references for building AG2 agents.</p>
+        </div>
+
+        <div class="resources-grid">
+
+          <a class="resource-card" href="https://docs.ag2.ai/" target="_blank" rel="noopener">
+            <div class="resource-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <div class="resource-content">
+              <h3>AG2 Documentation</h3>
+              <p>Guides, API reference, and examples for the AG2 agent framework.</p>
+            </div>
+          </a>
+
+          <a class="resource-card" href="https://github.com/ag2ai/ag2" target="_blank" rel="noopener">
+            <div class="resource-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </div>
+            <div class="resource-content">
+              <h3>AG2 on GitHub</h3>
+              <p>Source code, issues, and community discussions for the AG2 framework.</p>
+            </div>
+          </a>
+
+          <a class="resource-card" href="https://github.com/google/A2A" target="_blank" rel="noopener">
+            <div class="resource-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </div>
+            <div class="resource-content">
+              <h3>A2A Protocol</h3>
+              <p>Google's Agent-to-Agent protocol specification for interoperable agent services.</p>
+            </div>
+          </a>
+
+          <a class="resource-card" href="https://github.com/ag2ai/ag2-claude-plugins" target="_blank" rel="noopener">
+            <div class="resource-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path>
+              </svg>
+            </div>
+            <div class="resource-content">
+              <h3>Plugin Repository</h3>
+              <p>Source for these plugins. Contribute new plugins or report issues.</p>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Footer
+    ============================================================ -->
+    <footer>
+      <div class="container footer-inner">
+        <div class="footer-left">
+          <div class="footer-brand">Built for Claude Code by AG2 AI</div>
+          <p>Licensed under <a href="https://github.com/ag2ai/ag2-claude-plugins/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0</a></p>
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="https://docs.ag2.ai/" target="_blank" rel="noopener">AG2 Docs</a>
+          <span class="footer-divider" aria-hidden="true">/</span>
+          <a href="https://github.com/ag2ai/ag2" target="_blank" rel="noopener">AG2 GitHub</a>
+          <span class="footer-divider" aria-hidden="true">/</span>
+          <a href="https://github.com/google/A2A" target="_blank" rel="noopener">A2A Protocol</a>
+          <span class="footer-divider" aria-hidden="true">/</span>
+          <a href="https://github.com/ag2ai/ag2-claude-plugins" target="_blank" rel="noopener">Plugin Repo</a>
+        </nav>
+      </div>
+    </footer>
+
+  </div><!-- .page-wrapper -->
+
+  <script>
+    (function () {
+      var btn = document.getElementById('copy-btn');
+      var iconCopy = document.getElementById('icon-copy');
+      var iconCheck = document.getElementById('icon-check');
+      var label = document.getElementById('copy-label');
+      var CMD = '/plugin marketplace add ag2ai/ag2-claude-plugins';
+      var timer = null;
+
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(CMD).then(function () {
+          // Switch to "Copied" state
+          iconCopy.style.display = 'none';
+          iconCheck.style.display = 'block';
+          label.textContent = 'Copied!';
+          btn.classList.add('copied');
+
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            iconCopy.style.display = 'block';
+            iconCheck.style.display = 'none';
+            label.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2200);
+        }).catch(function () {
+          // Fallback for older browsers
+          var ta = document.createElement('textarea');
+          ta.value = CMD;
+          ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta);
+
+          iconCopy.style.display = 'none';
+          iconCheck.style.display = 'block';
+          label.textContent = 'Copied!';
+          btn.classList.add('copied');
+
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            iconCopy.style.display = 'block';
+            iconCheck.style.display = 'none';
+            label.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2200);
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
