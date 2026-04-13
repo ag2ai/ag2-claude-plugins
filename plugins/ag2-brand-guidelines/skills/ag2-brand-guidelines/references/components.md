@@ -117,10 +117,12 @@ Detailed specs for AG2 UI components beyond the core button and card patterns.
 
 ## Layout Rules
 
-- **Max content width**: 1200px, centered
-- **Grid**: 12-column with 24px gutter (desktop)
-- **Page margins**: 24px (mobile) / 48px (tablet) / auto-centered (desktop)
+- **Viewport**: 1600px reference width
+- **Max content width**: 1300px, centered with 150px side margins (desktop)
+- **Grid**: 64px increment grid within content area
+- **Page margins**: 24px (mobile) / 48px (tablet) / 150px (desktop)
 - **Mobile breakpoint**: 768px
 - **Tablet breakpoint**: 1024px
 - **Section pattern**: Full-width dark background → centered content container
 - **Vertical rhythm**: Sections separated by 80–120px
+- **Grid lines**: rgba(255,255,255,0.1) on dark backgrounds

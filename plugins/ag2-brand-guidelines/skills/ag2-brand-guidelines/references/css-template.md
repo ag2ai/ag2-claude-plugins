@@ -98,6 +98,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  font-weight: 500;
   line-height: 1.2;
   color: var(--color-text-primary);
 }
