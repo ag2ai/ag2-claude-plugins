@@ -61,6 +61,17 @@
       "license": "Apache-2.0",
       "category": "development",
       "tags": ["ag2", "architecture", "patterns", "best-practices", "prompts"]
+    },
+    {
+      "name": "ag2-brand-guidelines",
+      "source": "./plugins/ag2-brand-guidelines",
+      "description": "AG2 design system and brand guidelines. Applies consistent visual identity to all generated UI code and artifacts.",
+      "version": "0.1.0",
+      "homepage": "https://github.com/ag2ai/ag2-claude-plugins/tree/main/plugins/ag2-brand-guidelines",
+      "author": { "name": "AG2 AI" },
+      "license": "Apache-2.0",
+      "category": "design",
+      "tags": ["ag2", "brand", "design-system", "ui", "figma", "guidelines"]
     }
   ]
 }
