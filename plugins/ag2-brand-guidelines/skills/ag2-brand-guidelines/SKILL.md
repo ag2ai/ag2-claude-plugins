@@ -58,10 +58,10 @@ For white (dark backgrounds), change both fill values to `#ffffff`.
 
 | Token                  | Name         | HEX       | Usage                                        |
 |------------------------|--------------|-----------|----------------------------------------------|
-| `--color-primary`      | Primary      | #F3FF9B   | CTAs, key highlights, accent badges, links   |
+| `--color-primary`      | Primary      | #F3FF9B   | Heading highlights, accent badges, emphasis   |
 | `--color-soft-yellow`  | Soft Yellow  | #FCFFE9   | Subtle backgrounds, muted highlights, tags   |
 | `--color-green`        | Green        | #9BFFA3   | Success states, secondary accents, badges    |
-| `--color-blue`         | Blue         | #9BDDFF   | Info states, secondary accents, illustrations|
+| `--color-blue`         | Blue         | #9BDDFF   | Primary CTAs, info states, accents           |
 | `--color-pink`         | Pink         | #D59BFF   | Tertiary accents, decorative elements, tags  |
 | `--color-dark`         | Dark         | #1D1C1B   | Primary backgrounds, text on light surfaces  |
 | `--color-white`        | White        | #FFFFFF   | Text on dark backgrounds, card surfaces      |
@@ -81,11 +81,12 @@ For white (dark backgrounds), change both fill values to `#ffffff`.
 ### Color Rules
 
 - Dark backgrounds are the default. Light backgrounds are the exception.
-- Primary (#F3FF9B) is used sparingly — CTAs, key labels, active states,
-  highlighted text. Never as a large background fill.
-- Green (#9BFFA3) for success indicators, positive actions, secondary CTAs.
-- Blue (#9BDDFF) and Pink (#D59BFF) are supporting accents for variety in
-  illustrations, charts, tags, decorative elements.
+- Primary (#F3FF9B) is used for heading highlights, emphasis text, accent
+  badges. Never as a large background fill or CTA button.
+- Blue (#9BDDFF) is the primary CTA button color — used with shine overlay
+  and glass effect.
+- Green (#9BFFA3) for success indicators, positive actions, secondary accents.
+- Pink (#D59BFF) is a supporting accent for variety in tags, decorative elements.
 - Soft Yellow (#FCFFE9) for muted background highlights or subtle badges.
 - Use the 7-color palette exclusively — no random colors.
 
@@ -108,14 +109,14 @@ All headings: 120% line height, negative letter spacing.
 
 | Level | Size | Letter Spacing | Default Weight | Usage              |
 |-------|------|----------------|----------------|--------------------|
-| H1    | 64px | -4%            | 400 Regular    | Hero headlines     |
-| H2    | 56px | -3%            | 400 Regular    | Page titles        |
-| H3    | 48px | -3%            | 400 Regular    | Section headings   |
-| H4    | 40px | -3%            | 400 Regular    | Subsection heads   |
-| H5    | 32px | -2%            | 400 Regular    | Card titles        |
-| H6    | 24px | -2%            | 400 Regular    | Small headings     |
+| H1    | 64px | -4%            | 500 Medium     | Hero headlines     |
+| H2    | 56px | -3%            | 500 Medium     | Page titles        |
+| H3    | 48px | -3%            | 500 Medium     | Section headings   |
+| H4    | 40px | -3%            | 500 Medium     | Subsection heads   |
+| H5    | 32px | -2%            | 500 Medium     | Card titles        |
+| H6    | 24px | -2%            | 500 Medium     | Small headings     |
 
-Weight variants: Regular (400) default, Medium (500) for emphasis, Bold (700) for hero impact.
+Weight variants: Medium (500) default, Bold (700) for hero impact.
 
 ### Body Scale — Geist
 
@@ -164,11 +165,18 @@ green `0 0 20px rgba(155,255,163,0.15)`, blue `0 0 20px rgba(155,221,255,0.15)`.
 
 ### Buttons
 
-- **Primary CTA**: bg Primary (#F3FF9B), text Dark, Geist 14px/500, pill shape,
-  padding 12px 28px, hover brightness(1.05) + glow, active brightness(0.95).
-- **Green/Blue/Pink**: same sizing as Primary, bg of respective color, text Dark.
-- **Secondary**: transparent bg, 1px border `--color-border`, white text,
-  pill shape, hover bg `rgba(255,255,255,0.05)`.
+- **Primary CTA**: bg Blue (#9BDDFF), text Dark, Geist 16px/500 Medium, pill shape
+  (border-radius 100px), padding 13px 24px, border 1px white + outer border
+  1px rgba(155,221,255,0.64), inner shine gradient overlay, inset shadow
+  `inset 0 2px 12px rgba(255,255,255,0.25)`, hover brightness(1.05) + glow.
+- **Primary Small**: same style as Primary CTA, 32px height, Geist 14px/600
+  SemiBold, padding 13px 16px.
+- **White**: bg white, text Dark (#1D1C1B), Geist 17px/500 Medium, pill shape
+  (border-radius 48px), padding 11.5px 20px.
+- **Black**: bg rgba(255,255,255,0.1), text white, Geist 17px/500 Medium, pill
+  shape (border-radius 48px), padding 11.5px 20px.
+- **Dark (on light bg)**: bg Dark (#1D1C1B), text brand color (Primary/Blue/White
+  depending on context), Geist 17px/500 Medium, pill shape, padding 11.5px 20px.
 - **Ghost**: transparent, white text with underline or arrow, hover opacity 0.8.
 
 ### Cards
@@ -179,8 +187,14 @@ Title: H5/H6 Alpha Lyrae. Body: Text 16/14 Geist Regular.
 
 ### Navigation
 
-bg `--color-dark` with transparency + backdrop-blur. Logo left. Links white,
-Geist 14px/400, opacity 0.8 → 1.0 hover. Primary pill CTA in nav.
+bg `--color-dark`, border-bottom 1px rgba(255,255,255,0.1). Logo left (40x40px).
+Links: white, Geist 15px/500 Medium. Right side: two CTA buttons.
+- **Secondary nav button**: bg rgba(255,255,255,0.1), white text, Geist 15px/500,
+  34px height, pill shape (border-radius 999px), padding 6px 14px.
+- **Primary nav button**: bg white, text Dark, Geist 15px/500, 34px height,
+  pill shape (border-radius 48px), padding 4px 14px.
+- Nav links: Product, Developers, Research, Ecosystem, Blog (reference labels).
+- Layout: 1600px viewport, content centered in 1300px container, 150px side margins.
 
 For detailed component specs (form inputs, tags, code blocks), see
 `references/components.md`.
@@ -208,9 +222,9 @@ AG2 is dark-mode-first. Always default to dark.
 - Default to dark backgrounds (#1D1C1B)
 - Alpha Lyrae for headings, Geist for body
 - Negative letter spacing on headings (-2% to -4%)
-- Primary (#F3FF9B) as highlight only, not background fill
+- Primary (#F3FF9B) for heading highlights; Blue (#9BDDFF) for primary CTAs
 - Generous spacing between sections (80px+)
-- Subtle glow effects on primary CTAs
+- Shine overlay + inset shadow on primary CTA buttons
 - 7-color palette exclusively
 
 **Never**:
@@ -232,9 +246,9 @@ When generating any AG2 UI code:
 2. Define all CSS variables (see `references/css-template.md`)
 3. Apply Alpha Lyrae to H1–H6 with tight letter spacing
 4. Apply Geist to body text, labels, UI elements
-5. Correct weights: Regular body, Medium labels/buttons, Bold emphasis
-6. Primary (#F3FF9B) only for CTAs, highlights, accents
-7. Pill-shaped CTA buttons with brand color bg and Dark text
+5. Correct weights: Medium headings, Regular body, Medium labels/buttons, Bold emphasis
+6. Primary (#F3FF9B) for highlights and accents; Blue (#9BDDFF) for primary CTAs
+7. Pill-shaped CTA buttons with Blue bg, shine overlay, and white text
 8. Subtle glow effects on interactive elements
 9. Generous spacing — sections breathe (48–120px gaps)
 10. 7-color palette only — no random colors
