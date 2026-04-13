@@ -69,6 +69,16 @@ Architecture advisors for AG2 agent systems.
 | `ag2-architect` | Recommends orchestration patterns (group chat, pipeline, handoffs, etc.) based on your use case |
 | `ag2-prompt-engineer` | Crafts and reviews system prompts for maximum agent reliability |
 
+### ag2-brand-guidelines
+
+AG2 design system and brand guidelines with live Figma sync.
+
+| Skill | Description |
+|-------|-------------|
+| `ag2-brand-guidelines` | Applies AG2's official design system (colors, typography, components, dark/light themes) to all generated UI code and artifacts |
+
+**MCP Connectors:** Figma — pull live design tokens from the [AG2 design system](https://www.figma.com/design/1fqtTB9astetM1bfkdEwN5/AG2---2026)
+
 ## Pattern Quick Reference
 
 | Need | Pattern | Plugin |

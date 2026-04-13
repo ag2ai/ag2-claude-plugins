@@ -1,0 +1,9 @@
+{
+  "name": "ag2-brand-guidelines",
+  "version": "0.1.0",
+  "description": "AG2 design system and brand guidelines. Applies consistent visual identity to all generated UI code, artifacts, and visual output for the AG2 multi-agent AI framework.",
+  "author": {
+    "name": "AG2"
+  },
+  "keywords": ["ag2", "brand", "design-system", "ui", "guidelines"]
+}
