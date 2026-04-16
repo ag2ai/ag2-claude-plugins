@@ -9,7 +9,11 @@ description: >
   AG2 brand, design system, brand colors, typography, visual consistency,
   component styling, or wants any UI to look like AG2's product. Even if
   the user doesn't explicitly say "brand guidelines," use this skill for
-  any AG2-related visual work.
+  any AG2-related visual work. Also activate for **campaign landing pages**,
+  marketing / product-announcement pages, or any request where the user
+  supplies campaign content (headline, stats, problem, how-it-works,
+  features, CTA) and asks for a full page — use the canonical 9-section
+  light-mode pattern in references/page-templates/campaign-landing.md.
 metadata:
   version: "0.1.0"
 ---
@@ -38,8 +42,8 @@ landing pages, dashboards, presentations, and any UI code.
 The AG2 logo is a pixel-art robot mascot with "AG2" wordmark. Two variants
 are provided in `references/`:
 
-- **Dark version** (`ag2-logo-dark.svg`): `fill="#000001"` — use on light backgrounds
-- **White version** (`ag2-logo-white.svg`): `fill="#ffffff"` — use on dark backgrounds
+- **Dark version** (`assets/ag2-logo-dark.svg`): `fill="#000001"` — use on light backgrounds
+- **White version** (`assets/ag2-logo-white.svg`): `fill="#ffffff"` — use on dark backgrounds
 
 The SVG is 90x50 viewBox. Always use the official SVG inline — never
 approximate or recreate the logo. The dark logo SVG for inline use:
@@ -196,8 +200,47 @@ Links: white, Geist 15px/500 Medium. Right side: two CTA buttons.
 - Nav links: Product, Developers, Research, Ecosystem, Blog (reference labels).
 - Layout: 1600px viewport, content centered in 1300px container, 150px side margins.
 
-For detailed component specs (form inputs, tags, code blocks), see
-`references/components.md`.
+For detailed component specs (nav, buttons, cards, chat, agent profile,
+etc.), see `references/components.md`. For the grid overlay system, see
+`references/grid-overlay.md`. For all tokens and CSS variables, see
+`references/foundations.md`. For icons, see `references/icons.md`.
+
+---
+
+## Icons
+
+Use **`@iconify/react`** with the **Fluent UI Regular 24** set
+(`fluent:*-24-regular`) for all icons in React output. Do NOT hand-draw SVG
+paths in JSX. See `references/icons.md` for the canonical concept → icon
+mapping and sizing/color rules.
+
+```tsx
+import { Icon } from '@iconify/react';
+<Icon icon="fluent:brain-circuit-24-regular" width={32} />
+```
+
+---
+
+## Campaign Landing Pages
+
+When the user asks to build a **campaign landing page**, **marketing page**,
+**product announcement page**, or provides structured campaign content
+(headline + stats + problem + steps + features + CTA), use the canonical
+campaign structure documented in `references/page-templates/campaign-landing.md`.
+
+Trigger on phrases like: "campaign landing page", "landing page for
+{product}", "marketing page", "product page", "announcement page",
+"give me the content and design the whole campaign", or any request
+that provides campaign-style copy (stats, problem, how-it-works, features).
+
+The pattern is a **9-section light-mode layout** (nav → hero with grid
+overlay → Why This Matters stats → Built by AG2 logos → The Problem →
+How It Works → What You Get → CTA footer → footer). Fill the content
+slots defined at the bottom of that reference; do not alter structural
+markup, spacing, or background color rotation.
+
+This is the **only** AG2 page type that defaults to a light background —
+it is intentional. Do not convert it to dark mode.
 
 ---
 
@@ -254,8 +297,14 @@ When generating any AG2 UI code:
 10. 7-color palette only — no random colors
 11. White on Dark contrast: 4.5:1+ (WCAG AA)
 
-For the full CSS variables template, see `references/css-template.md`.
-For landing page section patterns, see `references/landing-page-pattern.md`.
+For the full CSS variables template, see `references/foundations.md`.
+For individual page templates (light landing, dark landing, product grid,
+product detail, Vera landing, AgentOS chat/empty), see
+`references/page-templates/`.
+For campaign / marketing landing pages, see
+`references/page-templates/campaign-landing.md`.
+For the Figma source map (file + node IDs), see
+`references/figma-source-map.md`.
 
 ---
 
