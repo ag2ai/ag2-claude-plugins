@@ -41,24 +41,37 @@ in `references/icons.md`.
 6. **How [Product] Works** — 3 numbered step cards with blue pill badges.
 7. **What You Get** — 2×3 feature grid on `rgba(213,155,255,0.1)` (pink tint).
 8. **CTA Footer** — headline + sub + primary CTA on `#F3FF9B` (primary) band
-   with decorative background image.
+   with decorative spiral background (`cta-bg-dots.png`, bleeds above the top
+   edge — see section 8 for exact sizing).
 9. **Footer** — copyright left, 4 social icons right, with dotted dividers.
+
+---
+
+## Font Loading
+
+The campaign page uses **Geist only** — no Alpha Lyrae, no Inter. Headings
+and body both use Geist (400 Regular, 500 Medium). Verified against Figma
+node `442:4117` — every text layer in the campaign frame resolves to
+`Geist:Regular` or `Geist:Medium`. Drop these into `<head>` **before** any
+stylesheet that consumes `var(--font-body)`:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap">
+```
+
+Source: https://fonts.google.com/specimen/Geist. Only 400 and 500 are used —
+don't pull extra weights or Geist Mono.
 
 ---
 
 ## CSS Tokens (campaign-specific)
 
 ```css
-/* Load Alpha Lyrae from the plugin assets (licensed copy shared with
-   gtm-workforce). Without this, headings fall back to Inter and lose the
-   pixel-stencil character. */
-@font-face {
-  font-family: 'Alpha Lyrae';
-  src: url('../assets/fonts/AlphaLyrae-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+/* Geist is loaded via the Google Fonts <link> tags in the Font Loading
+   section above — do NOT add a local @font-face here. Alpha Lyrae is NOT
+   used on the campaign landing; headings and body both use Geist. */
 
 :root {
   --c-dark: #1D1C1B;
@@ -75,8 +88,11 @@ in `references/icons.md`.
   --c-blue-btn-border: rgba(155,221,255,0.64);
   --c-blue-btn-text: #002F48;
 
-  --font-display: "Alpha Lyrae", "Inter", sans-serif;
+  /* Single family for this page — headings and body both use Geist.
+     --font-display is kept as an alias so section CSS below can stay
+     unchanged, but it points at the same stack. */
   --font-body: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--font-body);
 
   --dot-grid: radial-gradient(circle, rgba(29,28,27,0.1) 1px, transparent 1px);
 }
@@ -492,10 +508,22 @@ import { Icon } from '@iconify/react';
 
 ## 8. CTA Footer — Primary Yellow Band
 
+The yellow band has a **decorative spiral background** that bleeds above the
+section's top edge. In Figma this is node `442:4438` ("bg"): a 1300×701px
+image absolutely positioned at `top:-167px, left:0`, clipped by
+`overflow:hidden` on the section. The asset ships with this plugin at
+`references/assets/cta-bg-dots.png` (copy it into the consuming project —
+e.g. `public/cta-bg.png` for Vite/Next — and reference it at the site root).
+
 ```html
 <section class="c-cta-final">
-  <h2 class="c-h4">{{CTA_HEADLINE_LINE_1}}<br>{{CTA_HEADLINE_LINE_2}}</h2>
-  <p class="c-lead">{{CTA_SUB}}</p>
+  <div class="c-cta-final-bg" aria-hidden="true">
+    <img src="/cta-bg.png" alt="">
+  </div>
+  <div class="c-cta-final-content">
+    <h2 class="c-h4">{{CTA_HEADLINE_LINE_1}}<br>{{CTA_HEADLINE_LINE_2}}</h2>
+    <p class="c-lead">{{CTA_SUB}}</p>
+  </div>
   <a href="#" class="c-btn-blue-glass">{{CTA_LABEL}}</a>
 </section>
 ```
@@ -509,6 +537,22 @@ import { Icon } from '@iconify/react';
   text-align: center;
   position: relative; overflow: hidden;
 }
+/* Decorative spiral — bleeds above the top padding. Figma: 1300×701,
+   top:-167px. The inner img is slightly oversized (103.53%) and offset
+   (-1.76%) to match Figma's crop exactly. Do NOT swap for a plain dot
+   pattern — that's a different asset. */
+.c-cta-final-bg {
+  position: absolute; top: -167px; left: 0;
+  width: 1300px; height: 701px;
+  pointer-events: none; overflow: hidden;
+}
+.c-cta-final-bg img {
+  position: absolute; top: -1.76%; left: 0;
+  width: 100%; height: 103.53%;
+  max-width: none; object-fit: cover;
+}
+.c-cta-final-content { position: relative; display: flex; flex-direction: column;
+  align-items: center; gap: 8px; }
 .c-h4 { font-family: var(--font-display); font-weight: 500;
   font-size: 40px; line-height: 1.2; letter-spacing: -1.2px; }
 
@@ -583,7 +627,7 @@ When the user provides campaign content, map it into these slots:
 
 | Slot                      | Used in      | Notes                                    |
 |---------------------------|--------------|------------------------------------------|
-| `HEADLINE`                | Hero         | 1 sentence, 40px Alpha Lyrae             |
+| `HEADLINE`                | Hero         | 1 sentence, 40px Geist Medium            |
 | `SUB_LINE_1`, `SUB_LINE_2`| Hero         | 2 lines, 16px Geist                      |
 | `CTA_LABEL` / `CTA_NOTE`  | Hero, Final  | Label ≤4 words; note ≤60 chars           |
 | `CHIP_1..3`               | Hero         | 3 benefit chips, ≤8 words each           |
@@ -593,7 +637,7 @@ When the user provides campaign content, map it into these slots:
 | `PRODUCT`                 | How Works    | Product name                             |
 | `STEP_1..3_TITLE/BODY`    | How Works    | 3 steps, numbered 01/02/03               |
 | `FEAT_1..6_TITLE/BODY`    | What You Get | 6 features on 2×3 grid                   |
-| `CTA_HEADLINE_LINE_1..2`  | CTA Footer   | 40px Alpha Lyrae, 2 lines                |
+| `CTA_HEADLINE_LINE_1..2`  | CTA Footer   | 40px Geist Medium, 2 lines               |
 | `CTA_SUB`                 | CTA Footer   | 1 line                                   |
 
 ---
@@ -606,8 +650,10 @@ When the user provides campaign content, map it into these slots:
   entire page — every section inherits the gutters.
 - Section backgrounds rotate in a fixed order: white → soft yellow → white
   → blue tint → white → pink tint → primary. Don't reshuffle.
-- Headings always Alpha Lyrae Medium with negative letter-spacing; never
-  substitute Geist.
+- Headings use **Geist Medium (500)** with negative letter-spacing
+  (`-0.48px` @24px, `-0.64px` @32px, `-1.2px` @40px, `-2.56px` @64px). Body
+  copy uses **Geist Regular (400)**. Do not substitute Alpha Lyrae or Inter
+  on this page — the campaign variant is single-family by design.
 - Icon cards and step cards use the same `.c-card` frame; only the
   interior differs (icon vs numbered badge).
 - Primary CTA in hero is **Dark (#1D1C1B) pill** — blue glass-shine CTA is
