@@ -148,12 +148,16 @@ All AG2 component specs. Tokens referenced here live in `foundations.md`.
   primary yellow on hover.
 - **Dot-grid texture**: 6px repeating pattern at 10% opacity.
 - **64px grid overlay**: DOM-based (see `grid-overlay.md`).
-- **Logo bar** (landing): row of partner/customer logos — Google, NVIDIA,
-  Walmart, AT&T, HSBC, Johnson & Johnson, Flipkart, cegid, MediaTek. On
-  dark backgrounds apply
-  `filter: grayscale(1) brightness(10) contrast(0.5); opacity: 0.6` to
-  render logos muted white. On light backgrounds use full-color. Source
-  images in `assets/logo-*.png`.
+- **Logo bar** (landing): row of partner/customer logos. **Customer
+  logos are project content, not brand assets** — they do not ship
+  with this plugin. Each campaign supplies its own customer list at
+  `public/logos/customer-N.png` (see the "Required project assets"
+  section in `page-templates/campaign-landing.md`). Generated code
+  emits `/logos/customer-1.png` through `/logos/customer-9.png` as TODO
+  placeholders. Recommended: PNG, ~129×64px, transparent bg. On dark
+  backgrounds apply `filter: grayscale(1) brightness(10) contrast(0.5);
+  opacity: 0.6` to render logos muted white; on light backgrounds use
+  full-color or the grey treatment.
 
 ---
 

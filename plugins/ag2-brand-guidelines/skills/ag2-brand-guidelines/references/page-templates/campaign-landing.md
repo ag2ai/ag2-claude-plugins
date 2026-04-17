@@ -41,8 +41,8 @@ in `references/icons.md`.
 6. **How [Product] Works** — 3 numbered step cards with blue pill badges.
 7. **What You Get** — 2×3 feature grid on `rgba(213,155,255,0.1)` (pink tint).
 8. **CTA Footer** — headline + sub + primary CTA on `#F3FF9B` (primary) band
-   with decorative spiral background (`cta-bg-dots.png`, bleeds above the top
-   edge — see section 8 for exact sizing).
+   with decorative spiral background (`cta-spiral.png` served from plugin
+   CDN, bleeds above the top edge — see section 8 for exact sizing).
 9. **Footer** — copyright left, 4 social icons right, with dotted dividers.
 
 ---
@@ -63,6 +63,69 @@ stylesheet that consumes `var(--font-body)`:
 
 Source: https://fonts.google.com/specimen/Geist. Only 400 and 500 are used —
 don't pull extra weights or Geist Mono.
+
+---
+
+## Asset URLs — brand vs. project content
+
+The plugin distinguishes two asset tiers, and generated code must treat
+them differently. **Do not collapse these categories** — shipping a
+generic trust bar of Fortune 500 logos with every campaign is wrong; so
+is hardcoding AG2's mascots into each consumer's `public/` folder.
+
+### Tier 1 — Brand assets (CDN, plugin-owned)
+
+AG2-owned, identity-level, never vary by campaign (mascots, spiral,
+AG2 logo, dot-pattern). These are served from jsDelivr off this
+plugin's GitHub repo. Generated components reference them **directly by
+absolute URL** — no copy step, renders correctly on first run.
+
+One base URL to pin — change this line (and only this line) if the
+asset CDN ever moves (e.g. to `assets.ag2.ai` on Cloudflare R2):
+
+```
+ASSET_BASE = https://cdn.jsdelivr.net/gh/ag2ai/ag2-claude-plugins@main/plugins/ag2-brand-guidelines/skills/ag2-brand-guidelines/references/assets
+```
+
+Every brand-asset `<img>` in generated code uses `${ASSET_BASE}/…`:
+
+| Asset              | CDN path                       |
+|--------------------|--------------------------------|
+| Hero mascots       | `${ASSET_BASE}/mascot-1.png` … `mascot-5.png` |
+| Mascot sprite      | `${ASSET_BASE}/mascots-sprite.png`            |
+| CTA spiral         | `${ASSET_BASE}/cta-spiral.png`                |
+| AG2 logo (dark)    | `${ASSET_BASE}/ag2-logo-dark.svg`             |
+| AG2 logo (white)   | `${ASSET_BASE}/ag2-logo-white.svg`            |
+
+Pinning is `@main`, not a version tag — campaign pages are one-offs,
+we want brand refreshes to propagate automatically. Revisit only if
+immutability ever becomes a requirement.
+
+### Tier 2 — Project content (consumer-supplied)
+
+Customer/partner logos, product screenshots, campaign-specific imagery.
+These **vary per campaign** (a developer-tools product doesn't want a
+bank-industry logo grid) and must come from the consumer's project,
+not the plugin.
+
+Generated code emits **TODO placeholders** at `/logos/customer-N.png`
+with a comment telling the developer to replace them. The consumer
+provides the real files in their own `public/logos/` folder.
+
+### Required project assets
+
+When a consumer adopts a generated campaign page, they must add these
+files to their project's public folder before the page is
+production-ready:
+
+- `public/logos/customer-1.png` … `customer-9.png` — partner/customer
+  logos for the "Built by AG2" section. Recommended: PNG, ~129×64px,
+  transparent background, monochrome grey (`rgba(29,28,27,0.6)` works
+  well). 9 slots by default; the grid tolerates 3–10.
+
+Until the consumer supplies these, the logo grid renders with broken
+image icons. That's intentional — a placeholder logo grid is more
+honest than a fake one.
 
 ---
 
@@ -251,12 +314,14 @@ A row of 5 small 30×30 mascot icons sits centered above the headline.
 
 ```html
 <section class="c-hero">
+  <!-- Mascots are brand assets — served from the plugin CDN (see "Asset
+       URLs" section above). ASSET_BASE expands to the jsdelivr URL. -->
   <div class="c-hero-mascots">
-    <img src="../assets/mascot-1.png" alt="" width="30" height="30">
-    <img src="../assets/mascot-2.png" alt="" width="30" height="30">
-    <img src="../assets/mascot-3.png" alt="" width="30" height="30">
-    <img src="../assets/mascot-4.png" alt="" width="30" height="30">
-    <img src="../assets/mascot-5.png" alt="" width="30" height="30">
+    <img src="${ASSET_BASE}/mascot-1.png" alt="" width="30" height="30">
+    <img src="${ASSET_BASE}/mascot-2.png" alt="" width="30" height="30">
+    <img src="${ASSET_BASE}/mascot-3.png" alt="" width="30" height="30">
+    <img src="${ASSET_BASE}/mascot-4.png" alt="" width="30" height="30">
+    <img src="${ASSET_BASE}/mascot-5.png" alt="" width="30" height="30">
   </div>
 
   <h1 class="c-hero-title">{{HEADLINE}}</h1>
@@ -371,10 +436,21 @@ Use a checkmark icon (dark stroke, 20×20) or the existing inline SVG.
     <p class="c-lead">{{TRUST_SUB}}</p>
   </div>
   <div class="c-logos">
-    <!-- 9–10 logo cells, each 129×64 with 1px border -->
-    <div class="c-logo-cell"><img src="../assets/logo-google.png" alt="Google"></div>
-    <div class="c-logo-cell"><img src="../assets/logo-nvidia.png" alt="NVIDIA"></div>
-    <!-- walmart, att, hsbc, flipkart, cegid, mediatek, jnj … -->
+    <!-- 9–10 customer/partner logo cells, each 129×64 with 1px border.
+         TODO: replace these placeholders with the real customer list for
+         THIS campaign. Customer logos are project content, not brand —
+         they do NOT ship with the plugin. Drop the PNGs into the
+         consumer project at `public/logos/customer-N.png`. See the
+         "Required project assets" section at the top of this doc. -->
+    <div class="c-logo-cell"><img src="/logos/customer-1.png" alt="Customer 1"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-2.png" alt="Customer 2"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-3.png" alt="Customer 3"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-4.png" alt="Customer 4"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-5.png" alt="Customer 5"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-6.png" alt="Customer 6"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-7.png" alt="Customer 7"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-8.png" alt="Customer 8"></div>
+    <div class="c-logo-cell"><img src="/logos/customer-9.png" alt="Customer 9"></div>
   </div>
 </section>
 ```
@@ -511,14 +587,15 @@ import { Icon } from '@iconify/react';
 The yellow band has a **decorative spiral background** that bleeds above the
 section's top edge. In Figma this is node `442:4438` ("bg"): a 1300×701px
 image absolutely positioned at `top:-167px, left:0`, clipped by
-`overflow:hidden` on the section. The asset ships with this plugin at
-`references/assets/cta-bg-dots.png` (copy it into the consuming project —
-e.g. `public/cta-bg.png` for Vite/Next — and reference it at the site root).
+`overflow:hidden` on the section. The spiral is a brand asset served
+from the plugin CDN (`${ASSET_BASE}/cta-spiral.png`) — no local copy
+needed. Do **not** substitute a CSS dot-gradient "spiral" — it won't
+match Figma and the real file is only ~350KB.
 
 ```html
 <section class="c-cta-final">
   <div class="c-cta-final-bg" aria-hidden="true">
-    <img src="/cta-bg.png" alt="">
+    <img src="${ASSET_BASE}/cta-spiral.png" alt="">
   </div>
   <div class="c-cta-final-content">
     <h2 class="c-h4">{{CTA_HEADLINE_LINE_1}}<br>{{CTA_HEADLINE_LINE_2}}</h2>
