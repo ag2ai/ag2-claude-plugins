@@ -1,15 +1,26 @@
 # Logo & Mascots
 
+All brand assets (logo, mascots, decorative art) live in
+`references/assets/` **and** are served from the plugin's CDN so
+generated code can reference them by URL with no local copy step. See
+`page-templates/campaign-landing.md` for the canonical `ASSET_BASE`
+declaration. In short:
+
+```
+ASSET_BASE = https://cdn.jsdelivr.net/gh/ag2ai/ag2-claude-plugins@main/plugins/ag2-brand-guidelines/skills/ag2-brand-guidelines/references/assets
+```
+
 ## Logo
 
 Pixel-art robot mascot with "AG2" wordmark. 90×50 SVG viewBox.
 
-- Dark variant: `assets/ag2-logo-dark.svg` (fill `#000001`) — use on light bgs.
-- White variant: `assets/ag2-logo-white.svg` (fill `#FFFFFF`) — use on dark bgs.
+- Dark variant: `${ASSET_BASE}/ag2-logo-dark.svg` (fill `#000001`) — light bgs.
+- White variant: `${ASSET_BASE}/ag2-logo-white.svg` (fill `#FFFFFF`) — dark bgs.
 
-All binary and vector assets live in `references/assets/`.
-
-Always use the official SVG inline — never approximate or recreate.
+Source paths in this plugin: `assets/ag2-logo-dark.svg`,
+`assets/ag2-logo-white.svg`. Either inline the SVG (best — no network
+hop, instant render) or reference via `<img src="${ASSET_BASE}/…">`.
+Never approximate or recreate.
 
 Inline SVG (dark):
 
@@ -27,30 +38,46 @@ For white (dark backgrounds), change both `fill` values to `#ffffff`.
 is a 120×120 PNG rendered at 30×30 in the UI with
 `image-rendering: pixelated`.
 
-| File                     | Color           | Figma Node |
-|--------------------------|-----------------|------------|
-| `assets/mascot-1.png`    | Purple / violet | `26:245`   |
-| `assets/mascot-2.png`    | Teal / mint     | `26:244`   |
-| `assets/mascot-3.png`    | Purple / violet | `26:243`   |
-| `assets/mascot-4.png`    | Gold / yellow   | `26:242`   |
-| `assets/mascot-5.png`    | Orange / peach  | `26:241`   |
+| CDN URL                             | Color           | Figma Node |
+|-------------------------------------|-----------------|------------|
+| `${ASSET_BASE}/mascot-1.png`        | Purple / violet | `26:245`   |
+| `${ASSET_BASE}/mascot-2.png`        | Teal / mint     | `26:244`   |
+| `${ASSET_BASE}/mascot-3.png`        | Purple / violet | `26:243`   |
+| `${ASSET_BASE}/mascot-4.png`        | Gold / yellow   | `26:242`   |
+| `${ASSET_BASE}/mascot-5.png`        | Orange / peach  | `26:241`   |
 
-- Sprite sheet: `assets/mascots-sprite.png` (600×120, all 5 side-by-side,
-  Figma node `26:240`).
+- Sprite sheet: `${ASSET_BASE}/mascots-sprite.png` (600×120, all 5
+  side-by-side, Figma node `26:240`).
 - Display at 30×30px or 32×32px with `image-rendering: pixelated`.
 - Arrange in a horizontal row with 16px gap.
-- Always use the official PNGs — never approximate or recreate the pixel art.
+- Always use the official PNGs via the CDN URL — never approximate or
+  recreate the pixel art, and never copy the PNGs into a consuming
+  project's `public/` folder (the CDN is the canonical source).
 
 ---
 
-## Partner Logos
+## Decorative brand imagery
 
-Used in the logo bar on landing pages. Source images in
-`assets/logo-*.png`.
+- CTA spiral (yellow-band background): `${ASSET_BASE}/cta-spiral.png`
+  (1300×701 PNG, Figma node `442:4438`). Used in section 8 of the
+  campaign landing. See `page-templates/campaign-landing.md` for exact
+  sizing / positioning.
 
-Google, NVIDIA, Walmart, AT&T, HSBC, Johnson & Johnson, Flipkart, cegid,
-MediaTek.
+---
 
+## Partner / customer logos — NOT a brand asset
+
+Partner logos (Google, NVIDIA, Walmart, etc.) **do not ship with this
+plugin**. They are project content — each campaign should display its
+own real customer list, not a generic Fortune 500 grid. Generated code
+emits TODO placeholders at `/logos/customer-N.png`; the consumer
+supplies real PNGs in their own `public/logos/` folder.
+
+Recommended format: PNG, ~129×64px, transparent bg, monochrome grey
+(`rgba(29,28,27,0.6)` works well). The `.c-logos` grid tolerates 3–10
+cells.
+
+Treatment by background:
 - On dark backgrounds:
   `filter: grayscale(1) brightness(10) contrast(0.5); opacity: 0.6`
-- On light backgrounds: full-color.
+- On light backgrounds: full-color or the grey treatment above.

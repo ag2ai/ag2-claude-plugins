@@ -37,13 +37,39 @@ landing pages, dashboards, presentations, and any UI code.
 - **Visual Direction**: Dark-first interfaces, neon accent colors, clean
   geometric layouts, generous whitespace within dark surfaces
 
+## Image Assets — CDN, not local copies
+
+Brand assets (logo, mascots, decorative art) live in
+`references/assets/` **and** are served from jsDelivr off this plugin's
+GitHub repo. Generated code references them by absolute URL so the
+output renders correctly the first time with no asset-copy step.
+
+The canonical base URL (use this in every generated component):
+
+```
+ASSET_BASE = https://cdn.jsdelivr.net/gh/ag2ai/ag2-claude-plugins@main/plugins/ag2-brand-guidelines/skills/ag2-brand-guidelines/references/assets
+```
+
+Two rules:
+1. **Brand assets** (AG2 logo, mascots, `cta-spiral.png`) → always via
+   `${ASSET_BASE}/…`. Never tell a consumer to copy these into their
+   `public/` folder.
+2. **Project content** (customer/partner logos, product screenshots,
+   campaign-specific imagery) → emit TODO placeholders pointing at
+   consumer-owned paths like `/logos/customer-N.png`. The plugin does
+   not ship customer logos; each campaign supplies its own.
+
+See `references/logo-and-mascots.md` for the full asset table and
+`references/page-templates/campaign-landing.md` → "Required project
+assets" for what consumers must supply.
+
 ## Logo
 
 The AG2 logo is a pixel-art robot mascot with "AG2" wordmark. Two variants
-are provided in `references/`:
+are provided — inline the SVG (zero network hop) or reference via CDN:
 
-- **Dark version** (`assets/ag2-logo-dark.svg`): `fill="#000001"` — use on light backgrounds
-- **White version** (`assets/ag2-logo-white.svg`): `fill="#ffffff"` — use on dark backgrounds
+- **Dark version** (`${ASSET_BASE}/ag2-logo-dark.svg`, `fill="#000001"`) — light bgs
+- **White version** (`${ASSET_BASE}/ag2-logo-white.svg`, `fill="#ffffff"`) — dark bgs
 
 The SVG is 90x50 viewBox. Always use the official SVG inline — never
 approximate or recreate the logo. The dark logo SVG for inline use:
